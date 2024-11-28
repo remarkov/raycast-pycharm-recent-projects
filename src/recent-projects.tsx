@@ -147,7 +147,7 @@ function useSearch() {
         }
       }
     },
-    [setState]
+    [setState],
   );
 
   return { state, search };
@@ -157,7 +157,7 @@ async function deleteRecord(searchResult: SearchResult): Promise<boolean> {
   const content = parser.parse(
     await readFile(recentProjectsFilePath, {
       flag: "r",
-    })
+    }),
   );
   const projectPathKey = searchResult.path.replace(process.env.HOME || "~", "$USER_HOME$");
   const additionalInfoIndex = content.application.component.option.findIndex((option: NameValueData) => {
@@ -204,7 +204,7 @@ async function performSearch(searchText: string): Promise<SearchResult[]> {
   const content = parser.parse(
     await readFile(recentProjectsFilePath, {
       flag: "r",
-    })
+    }),
   );
   const application = content.application;
   let options =
