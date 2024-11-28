@@ -12,7 +12,7 @@
   "commands": [
     {
       "name": "recent-projects",
-      "title": "Recent projects",
+      "title": "Recent Projects",
       "description": "Search and manipulate recent projects in PyCharm",
       "mode": "view"
     }
