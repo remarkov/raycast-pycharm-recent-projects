@@ -11,7 +11,7 @@ import {
   showToast,
   Toast,
 } from "@raycast/api";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { exec } from "child_process";
 import { readFile, writeFile } from "fs/promises";
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
@@ -150,6 +150,11 @@ function useSearch() {
     [setState],
   );
 
+  // onSearchTextChange only fires on change, so the list would stay empty until the first keystroke
+  useEffect(() => {
+    search("");
+  }, [search]);
+
   return { state, search };
 }
 
@@ -221,7 +226,8 @@ async function performSearch(searchText: string): Promise<SearchResult[]> {
   });
   const projectPaths: SearchResult[] = [];
   entries.map.entry.forEach((project: Project) => {
-    if (project["@_key"]) {
+    // IDE-internal entries (LightEdit and friends) live under the config dir, not a real project path
+    if (project["@_key"] && !project["@_key"].startsWith("$APPLICATION_CONFIG_DIR$")) {
       const path = project["@_key"].replace("$USER_HOME$", process.env.HOME || "~");
       const name = path.split("/").at(-1) || "(unknown)";
       let openTimeStamp = "";
