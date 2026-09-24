@@ -7,12 +7,13 @@ import {
   Icon,
   List,
   open,
+  PopToRootType,
   popToRoot,
   showToast,
   Toast,
 } from "@raycast/api";
 import { useCallback, useEffect, useState } from "react";
-import { exec } from "child_process";
+import { exec, spawn } from "child_process";
 import { readFile, writeFile } from "fs/promises";
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
 import { runAppleScript } from "run-applescript";
@@ -73,9 +74,11 @@ function SearchListItem({
             title="Open project"
             icon={{ fileIcon: "/Applications/PyCharm.app" }}
             onAction={async () => {
-              await closeMainWindow();
-              await popToRoot();
-              exec(`/Applications/PyCharm.app/Contents/MacOS/pycharm ${searchResult.path}`);
+              spawn("/Applications/PyCharm.app/Contents/MacOS/pycharm", [searchResult.path], {
+                detached: true,
+                stdio: "ignore",
+              }).unref();
+              await closeMainWindow({ popToRootType: PopToRootType.Immediate });
             }}
           />
           <Action
