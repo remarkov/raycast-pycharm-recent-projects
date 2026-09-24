@@ -186,8 +186,13 @@ async function deleteRecord(searchResult: SearchResult): Promise<boolean> {
   const isPyCharmWasOpen = await isPyCharmRunning();
   const frontmostApp = await getFrontmostApplication();
   const isPyCharmWasInForeground = frontmostApp.name === "PyCharm";
-  if (isPyCharmWasOpen) {
-    exec(`osascript -e 'quit app "/Applications/PyCharm.app"'`);
+  if (isPyCharmWasOpen && !(await quitPyCharm())) {
+    await showToast({
+      style: Toast.Style.Failure,
+      title: "Could not remove project",
+      message: "PyCharm did not quit in time, so the history was left unchanged",
+    });
+    return false;
   }
   await writeFile(recentProjectsFilePath, xmlContent, { flag: "w" });
   if (isPyCharmWasOpen) {
@@ -244,6 +249,16 @@ async function performSearch(searchText: string): Promise<SearchResult[]> {
       return prj1.lastOpen < prj2.lastOpen ? 1 : -1;
     })
     .filter((project) => project.name.toLocaleLowerCase().includes(searchLower));
+}
+
+async function quitPyCharm(timeoutMs = 15000): Promise<boolean> {
+  await runAppleScript(`tell application "PyCharm" to quit`);
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (!(await isPyCharmRunning())) return true;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return false;
 }
 
 async function isPyCharmRunning(): Promise<boolean> {
